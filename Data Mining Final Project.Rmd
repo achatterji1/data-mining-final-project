@@ -324,12 +324,24 @@ legend(.6, .4, auc, title = "AUC", cex = 1)
 
 We arrived at the conclusion that a random forest model was a consistent winner when it came to performance relative to the other models tested.  After all, random forests are the benchmark standard for supervised learning techniques and have the added benefit of being remarkably easy to implement.
 
-```{r confusion matrix, echo=TRUE, warning=FALSE, include=TRUE}
+```{r echo=TRUE, warning=FALSE, include=FALSE}
+
 startup.tree = rpart(status ~ has_VC + has_angel + is_top500 + funding_total_usd + is_internet + is_entertainment
                      + is_knowledge_service + is_science + is_other + is_CA + is_MA + is_NY + is_TX + is_WA + milestones, data=startup_train, control = rpart.control(cp = 0.00001))
+
 startup.forest = randomForest(status ~ has_VC + has_angel + is_top500 + funding_total_usd + is_internet + is_entertainment
                               + is_knowledge_service + is_science + is_other + is_CA + is_MA + is_NY + is_TX + is_WA + milestones,
                               data=startup_train, importance = TRUE)
+
+
+
+```
+
+
+
+
+```{r confusion matrix, echo=TRUE, warning=FALSE, include=TRUE}
+
 conf <- startup.forest$confusion
 # conf
 
@@ -341,9 +353,9 @@ conf <- startup.forest$confusion
 
 ```
 
-The confusion matrix presented above corresponds to an accuracy of approximately 75-76% which is the highest achieved so far across all the models we have tested. 
+The confusion matrix presented above corresponds to an accuracy of approximately 76% which is the highest achieved so far across the models we have tested. 
 
-```{r , echo=TRUE, include=TRUE, include=FALSE}
+```{r , echo=TRUE, include=TRUE}
 modelr::rmse(startup.tree, startup_test)
 
 modelr::rmse(startup.forest, startup_test)
@@ -352,8 +364,7 @@ modelr::rmse(startup.forest, startup_test)
 Furthermore, if we observe the RMSEs of the random forest model far outperforms the aforementioned RMSE of the logistic regression, and further confirms our decision to use a random forest model.
 
 
-
-```{r , echo=FALSE, include=FALSE}
+```{r , echo=FALSE}
 plot(startup.forest)
 
 
@@ -364,7 +375,7 @@ The plot above shows out-of-bag MSE as a function of the number of trees used. I
 
 In order to ascertain which variables had the strongest effects on whether a startup would be acquired, we introduced the variable importance plot made from our forest model.
 
-```{r , echo=FALSE, include=FALSE}
+```{r , echo=FALSE}
 viforest<-varImpPlot(startup.forest)
 
 ```
@@ -372,19 +383,19 @@ In the figure above we notice two plots. The left plot tracks the mean decrease 
 
 
 
-```{r , echo=FALSE, include=FALSE}
+```{r , echo=FALSE}
 pd_funding<-partialPlot(startup.forest, startup_test, 'funding_total_usd', las=1)
 
 ```
-We find that the benefit from funding increases rapidly and peaks at around 20 million, then falls slightly to a trough at around 50 million before again increasing and reaching a plateau at around 70% acquisition probability. In summary, past 50-60 million in funding diminishing marginal returns set in very quickly.
+We find that the benefit from funding increases rapidly until around 20 million, then falls slightly to a trough at around 50 million before again increasing, and finally gradually decreasing to a plateau.
 
 
-```{r , echo=FALSE, include=FALSE}
+```{r , echo=FALSE}
 pd_milestones<-partialPlot(startup.forest, startup_test, 'milestones', las=1)
 
 
 ```
-In the figure above we see the relationship between `milestones` and probability of acquisition. A "milestone" can be defined in a variety of ways e.g. developing minimum viable product, getting your first customer etc. While these milestones vary somewhat across different startups, it is reasonable to assume that the number of milestones reached provides a good proxy for the momentum of a startup, and will be important to investors. In the figure above we observe that acquisition probability increases up to a maximum at around 3 milestones then slowly decreases to a plateau. As with `funding_total_usd` we again experience diminishing marginal returns.
+In the figure above we see the relationship between `milestones` and probability of acquisition. A "milestone" can be defined in a variety of ways e.g. developing minimum viable product, getting your first customer etc. While these milestones vary somewhat across different startups, it is reasonable to assume that the number of milestones reached provides a good proxy for the momentum of a startup, and will be important to investors. In the figure above we observe that acquisition probability increases and then plateuas. The behavior seen here calls to mind diminishing marginal returns.
 
 
 
@@ -395,7 +406,7 @@ Returning to the variable importance plot, we see that belonging to one of the c
 
 In the beginning for this project, we hypothesized that agglomeration economies would play a critical role in the success of startups. Ergo, we would expect that an early-stage company's geographic location would be very significant in determining its eventual success. Indeed we saw that variables such as `is_NY` and `is_CA` ranked rather highly in terms of %IncMSE and IncNodePurity, lending some credence to our hypothesis. However, location is not the whole story. Many other variables outweigh any location indicators. A possible explanation for this is that as the world economy becomes more interconnected through the internet, being in close proximity to VCs and other startups is slowly losing relevance. It would be interesting to see whether the recent COVID-19 pandemic lessened the significance of location even further given the massive transition to remote work. Granted, the pandemic is outside the scope of our data, however this topic may be worth exploring in a future study. 
 
-Another interesting finding that was briefly touched upon in the *Results* section is how the partial dependence of acquisition on `funding_total_usd` and `milestones` exhibit diminishing marginal returns. This finding may give some insight into how VCs evaluate firms. It seems that in the investor's estimation, there does not exist a linear relationship between the aforementioned factors and acquisition. Instead, it would appear that VCs have a certain benchmark level for funding and milestones reached they want to see, past which they will assign a credence of roughly 70% to the startup succeeding.
+Another interesting finding that was briefly touched upon in the *Results* section is how the partial dependence of acquisition on `milestones` exhibits diminishing marginal returns. Furthermore, roughly 20 and 60 million seems to be the optimal level of funding for a startup, beyond which the probability of acquisition decreases. This finding may give some insight into how VCs evaluate firms. It seems that in the investor's estimation, there does not exist a linear relationship between the aforementioned factors and acquisition. Instead, it would appear that VCs have a certain benchmark level for funding and milestones reached they want to see. Past this, the significance of further milestones or funding becomes less relevant and VCs might turn their focus to other factors.
 
 
 Finally, we note that while this dataset includes many variables, there are several other factors that influence the chances of success of a startup. Many of these are not mentioned in our dataset and so impose a constraint on the model and it’s accuracy.
