@@ -20,8 +20,8 @@ library(onehot)
 
 
 #Import Data
+startup_data_2 <-read.csv(file.path("startup data 2.csv"))
 
-startup_data_2 <- startup.data.2
 
 startup_data_2$status <- as.factor(startup_data_2$status)
 
@@ -46,7 +46,6 @@ startup_data_2$category_bucket[startup_data_2$category_code=='social'] = 'entert
 startup_data_2$category_bucket[startup_data_2$category_code=='photo_video'] = 'entertainment'
 startup_data_2$category_bucket[startup_data_2$category_code=='games_video'] = 'entertainment'
 startup_data_2$category_bucket[startup_data_2$category_code=='music'] = 'entertainment'
-#startup_data_2$category_bucket[startup_data_2$category_code=='public_relations'] = 'entertainment'
 startup_data_2$category_bucket[startup_data_2$category_code=='messaging'] = 'entertainment'
 startup_data_2$category_bucket[startup_data_2$category_code=='travel'] = 'entertainment'
 startup_data_2$category_bucket[startup_data_2$category_code=='sports'] = 'entertainment'
@@ -185,5 +184,3 @@ pd_milestones<-partialPlot(startup.forest, startup_test, 'milestones', las=1)
 pd_top500<-partialPlot(startup.forest, startup_test, 'is_top500', las=1)
 
 pd_CA<-partialPlot(startup.forest, startup_test, 'is_CA', las=1)
-
-

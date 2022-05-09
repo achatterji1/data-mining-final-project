@@ -41,19 +41,13 @@ conf <- startup.forest$confusion
 conf
 ```
 
-The confusion matrix presented above corresponds to 
+The confusion matrix presented above corresponds to an accuracy of approximately 75-76% which is the highest achieved so far across all the models we have tested, and further confirms our decision to use a random forest model.
 
 ```{r , echo=FALSE}
 plot(startup.forest)
 
 ```
-The plot above shows out-of-bag MSE as a function of the number of trees used. In each case we see that the number the error initially decreases rapidly at low numbers of trees used but then rapidly decreases and plateaus. Overall, at more than 100 trees there is very little appreciable change in the error.
-
-green: out of bag error
-
-black: RMSE
-
-red:
+The plot above shows out-of-bag MSE as a function of the number of trees used. In each case we see that the number the error initially decreases rapidly at low numbers of trees used but then rapidly decreases and plateaus. Overall, once we exceed over 100 trees, there is very little appreciable change in the error.
 
 
 ```{r , echo=FALSE}
@@ -66,9 +60,11 @@ modelr::rmse(startup.forest, startup_test)
 In order to ascertain which variables had the strongest effects on whether a startup would be acquired, we introduced the variable importance plot made from our forest model.
 
 ```{r , echo=FALSE}
-viforest<-varImpPlot(startup.forest, type=1)
+viforest<-varImpPlot(startup.forest)
 ```
-Discuss variable importance plot!!!
+In the figure above we notice two plots. The left plot tracks the mean decrease in accuracy that the model suffers when a given variable is removed, ceteris paribus. The right hand plot shows the mean decrease in the Gini Index. Here, the Gini Index functions as a measure of "impurity" meaning that "MeanDecreaseGini" can be understood as an increase in node purity. The variable importance plot thus allows us to choose variables that have the strongest effect of the probability a startup is acquired. We thus select `milestones`, `funding_total_usd`, and `is_top500` given their high contributions to model accuracy and high node purities which are indicative of their explanatory power. We will also examine a partial dependence plot of `is_CA` given the high concentration of startups in the state of California.
+
+Before moving on to partial dependence plots we note an interesting phenomenon. Belonging to one of the category "buckets" e.g. `is_science`, `is_entertainment` etc. seems to not be as siginficant as other factors. Indeed these variables fall rather low on the scales of mean decrease in accuracy and node purity. A possible reason for this is that it is not so much the "type" or "category" of startup that matters for eventual acquisition, but rather financial factors such as the ability to secure funding and meet specific milestones.
 
 
 ```{r , echo=FALSE}
@@ -81,9 +77,4 @@ pd_top500<-partialPlot(startup.forest, startup_test, 'is_top500', las=1)
 pd_CA<-partialPlot(startup.forest, startup_test, 'is_CA', las=1)
 
 ```
-
-Discuss partial dependence
-
-
-
-
+Discuss partial dependence plots!!!
