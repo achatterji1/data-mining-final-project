@@ -9,24 +9,81 @@ output: md_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(rpart)
+library(rpart.plot)
+library(rsample) 
+library(randomForest)
+library(lubridate)
+library(modelr)
+library(caret)
 library(readr)
-startup <- read.csv("~/Desktop/Data Mining Final Project /data-mining-final-project/startup data.csv")
-View(startup)
+library(lattice)
+library(caTools)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(onehot)
+
+
+
 ```
 
-## Including Plots
+## Random Forest
 
-You can also embed plots, for example:
+We arrived at the conclusion that a random forest model was a consistent winner when it came to performance relative to the other models tested.  After all, random forests are the benchmark standard for supervised learning techniques and have the added benefit of being remarkably easy to implement.
 
-```{r pressure, echo=FALSE}
+```{r confusion matrix, echo=FALSE}
+conf <- startup.forest$confusion
+conf
+```
+
+The confusion matrix presented above corresponds to 
+
+```{r , echo=FALSE}
+plot(startup.forest)
+
+```
+The plot above shows out-of-bag MSE as a function of the number of trees used. In each case we see that the number the error initially decreases rapidly at low numbers of trees used but then rapidly decreases and plateaus. Overall, at more than 100 trees there is very little appreciable change in the error.
+
+green: out of bag error
+
+black: RMSE
+
+red:
+
+
+```{r , echo=FALSE}
+modelr::rmse(startup.tree, startup_test)
+
+modelr::rmse(startup.forest, startup_test)
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+In order to ascertain which variables had the strongest effects on whether a startup would be acquired, we introduced the variable importance plot made from our forest model.
+
+```{r , echo=FALSE}
+viforest<-varImpPlot(startup.forest, type=1)
+```
+Discuss variable importance plot!!!
+
+
+```{r , echo=FALSE}
+pd_funding<-partialPlot(startup.forest, startup_test, 'funding_total_usd', las=1)
+
+pd_milestones<-partialPlot(startup.forest, startup_test, 'milestones', las=1)
+
+pd_top500<-partialPlot(startup.forest, startup_test, 'is_top500', las=1)
+
+pd_CA<-partialPlot(startup.forest, startup_test, 'is_CA', las=1)
+
+```
+
+Discuss partial dependence
+
+
+
+

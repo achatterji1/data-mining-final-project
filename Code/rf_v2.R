@@ -194,6 +194,6 @@ pd_milestones<-partialPlot(startup.forest, startup_test, 'milestones', las=1)
 
 pd_top500<-partialPlot(startup.forest, startup_test, 'is_top500', las=1)
 
-pd_angel<-partialPlot(startup.forest, startup_test, 'has_angel', las=1)
+pd_CA<-partialPlot(startup.forest, startup_test, 'is_CA', las=1)
 
 
