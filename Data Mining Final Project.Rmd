@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
+
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(rpart)
@@ -27,10 +28,241 @@ library(ggplot2)
 library(dplyr)
 library(data.table)
 library(onehot)
+install.packages("ROCR")
+library(ROCR)
 
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+
+startup_data_2 <-read.csv(file.path("startup data 2.csv"))
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+# knitr::opts_chunk$set(echo = TRUE)
+
+# startup_data_2 = read.csv("https://github.com/achatterji1/data-mining-final-project/blob/main/Data/startup%20data%202.csv")
+# view(startup_data_2)
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+
+# Installing packages
+# install.packages("dplyr")
+# install.packages("caTools")    # For Logistic regression
+# install.packages("ROCR")       # For the ROC curve to evaluate the model
+# 
+# # Libraries
+# library(dplyr)
+# library(mltools)
+# library(data.table)
+# library(caTools)
+# library(ROCR)
+# library(ggplot2)
+# library(tidyverse)
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+
+# Summary of the dataset in the package
+# summary(startup_data_2)
+
+# Dummy Variables (status)
+
+
+startup_data_2$status<-ifelse(startup_data_2$status=="acquired",1,0)
+startup_data_2
+
+       
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+
+
+# Create buckets for category_code
+
+# internet bucket
+startup_data_2$category_bucket = 'null'
+startup_data_2$category_bucket[startup_data_2$category_code=='web'] = 'internet'
+startup_data_2$category_bucket[startup_data_2$category_code=='search'] = 'internet'
+startup_data_2$category_bucket[startup_data_2$category_code=='network_hosting'] = 'internet'
+startup_data_2$category_bucket[startup_data_2$category_code=='enterprise'] = 'internet'
+startup_data_2$category_bucket[startup_data_2$category_code=='ecommerce'] = 'internet'
+startup_data_2$category_bucket[startup_data_2$category_code=='security'] = 'internet'
+
+# entertainment bucket
+#startup_data_2$category_bucket = 'null'
+startup_data_2$category_bucket[startup_data_2$category_code=='social'] = 'entertainment'
+startup_data_2$category_bucket[startup_data_2$category_code=='photo_video'] = 'entertainment'
+startup_data_2$category_bucket[startup_data_2$category_code=='games_video'] = 'entertainment'
+startup_data_2$category_bucket[startup_data_2$category_code=='music'] = 'entertainment'
+#startup_data_2$category_bucket[startup_data_2$category_code=='public_relations'] = 'entertainment'
+startup_data_2$category_bucket[startup_data_2$category_code=='messaging'] = 'entertainment'
+startup_data_2$category_bucket[startup_data_2$category_code=='travel'] = 'entertainment'
+startup_data_2$category_bucket[startup_data_2$category_code=='sports'] = 'entertainment'
+
+# knowledge_service bucket
+#startup_data_2$category_bucket = 'null'
+startup_data_2$category_bucket[startup_data_2$category_code=='public_relations'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='education'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='consulting'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='analytics'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='news'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='finance'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='advertising'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='hospitality'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='fashion'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='real_estate'] = 'knowledge_service'
+startup_data_2$category_bucket[startup_data_2$category_code=='transportation'] = 'knowledge_service'
+
+
+# science bucket
+#startup_data_2$category_bucket = 'null'
+startup_data_2$category_bucket[startup_data_2$category_code=='software'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='semiconductor'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='mobile'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='medical'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='health'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='hardware'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='cleantech'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='biotech'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='automotive'] = 'science'
+startup_data_2$category_bucket[startup_data_2$category_code=='manufacturing'] = 'science'
+
+# other bucket
+startup_data_2$category_bucket[startup_data_2$category_code=='other'] = 'other'                            
+
+table(startup_data_2$category_bucket)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+
+# Convert buckets into one hot encoding
+#startup_data_2$category_bucket
+startup_data_2$is_internet = 0
+startup_data_2$is_internet[startup_data_2$category_bucket=='internet'] = 1
+
+#startup_data_2$category_bucket
+startup_data_2$is_entertainment = 0
+startup_data_2$is_entertainment[startup_data_2$category_bucket=='entertainment'] = 1
+
+#startup_data_2$category_bucket
+startup_data_2$is_knowledge_service = 0
+startup_data_2$is_knowledge_service[startup_data_2$category_bucket=='knowledge_service'] = 1
+
+#startup_data_2$category_bucket
+startup_data_2$is_science = 0
+startup_data_2$is_science[startup_data_2$category_bucket=='science'] = 1
+
+#startup_data_2$category_bucket
+startup_data_2$is_other = 0
+startup_data_2$is_other[startup_data_2$category_bucket=='other'] = 1
+
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+
+# encode WA
+
+#startup_data_2$state_code.1
+startup_data_2$is_WA = 0
+startup_data_2$is_WA[startup_data_2$state_code.1=='WA'] = 1
+
+startup_data_2$is_otherstate[startup_data_2$is_WA==1] = 0
+
+# view(startup_data_2)
 
 
 ```
+
+#Logistic Regression: Baseline Model 
+
+``` {r, echo=FALSE, warning=FALSE, error=FALSE}
+
+# Train-Test Split
+startup_split <- initial_split(startup_data_2, SplitRatio = 0.8)
+startup_train <- training(startup_split)
+startup_test  <- testing(startup_split)
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+
+# Training the model
+logistic_model <- glm(status ~ has_VC + has_angel + is_top500 + funding_total_usd + is_internet + is_entertainment
+                      + is_knowledge_service + is_science + is_other + is_CA + is_MA + is_NY + is_TX + is_WA + milestones,
+                      data = startup_train,
+                      family = "binomial")
+
+logistic_model
+
+# Summary
+summary(logistic_model)
+
+```
+## The variables has_angel, is-top 500, funding_total_usd, is_TX, is_WA and milestones are not significant because they do not have a linear relationship with the dependent variable i.e. status. 
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+
+# Predict test data based on model
+predict_reg <- predict(logistic_model,
+                       startup_test, type = "response")
+predict_reg  
+
+
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+# Changing probabilities
+predict_reg <- ifelse(predict_reg >0.5, 1, 0)
+
+# Evaluating model accuracy using the confusion matrix
+table(startup_test$status, predict_reg)
+
+missing_classerr <- mean(predict_reg != startup_test$status)
+print(paste('Accuracy =', 1 - missing_classerr))
+
+
+```
+## Accuracy: 72.95%
+## The model is a good predictor of true positives. 
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+
+# ROC-AUC Curve
+ROCPred <- prediction(predict_reg, startup_test$status)
+ROCPer <- performance(ROCPred, measure = "tpr",
+                      x.measure = "fpr")
+
+auc <- performance(ROCPred, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+
+
+```
+## AUC score: 0.658
+## AUC: 65.84%
+## The model is an above-average predictor of accuracy as the area under the curve is only about 66%. 
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE}
+# Plotting curve
+plot(ROCPer)
+plot(ROCPer, colorize = TRUE,
+     print.cutoffs.at = seq(0.1, by = 0.1),
+     main = "ROC CURVE")
+abline(a = 0, b = 1)
+
+auc <- round(auc, 4)
+legend(.6, .4, auc, title = "AUC", cex = 1)
+
+
+```
+
+
 
 ## Random Forest
 
@@ -39,12 +271,14 @@ We arrived at the conclusion that a random forest model was a consistent winner 
 ```{r confusion matrix, echo=FALSE}
 conf <- startup.forest$confusion
 conf
+
 ```
 
 The confusion matrix presented above corresponds to an accuracy of approximately 75-76% which is the highest achieved so far across all the models we have tested, and further confirms our decision to use a random forest model.
 
 ```{r , echo=FALSE}
 plot(startup.forest)
+
 
 ```
 The plot above shows out-of-bag MSE as a function of the number of trees used. In each case we see that the number the error initially decreases rapidly at low numbers of trees used but then rapidly decreases and plateaus. Overall, once we exceed over 100 trees, there is very little appreciable change in the error.
@@ -55,26 +289,56 @@ modelr::rmse(startup.tree, startup_test)
 
 modelr::rmse(startup.forest, startup_test)
 
+
 ```
 
 In order to ascertain which variables had the strongest effects on whether a startup would be acquired, we introduced the variable importance plot made from our forest model.
 
 ```{r , echo=FALSE}
 viforest<-varImpPlot(startup.forest)
-```
-In the figure above we notice two plots. The left plot tracks the mean decrease in accuracy that the model suffers when a given variable is removed, ceteris paribus. The right hand plot shows the mean decrease in the Gini Index. Here, the Gini Index functions as a measure of "impurity" meaning that "MeanDecreaseGini" can be understood as an increase in node purity. The variable importance plot thus allows us to choose variables that have the strongest effect of the probability a startup is acquired. We thus select `milestones`, `funding_total_usd`, and `is_top500` given their high contributions to model accuracy and high node purities which are indicative of their explanatory power. We will also examine a partial dependence plot of `is_CA` given the high concentration of startups in the state of California.
 
-Before moving on to partial dependence plots we note an interesting phenomenon. Belonging to one of the category "buckets" e.g. `is_science`, `is_entertainment` etc. seems to not be as siginficant as other factors. Indeed these variables fall rather low on the scales of mean decrease in accuracy and node purity. A possible reason for this is that it is not so much the "type" or "category" of startup that matters for eventual acquisition, but rather financial factors such as the ability to secure funding and meet specific milestones.
+```
+In the figure above we notice two plots. The left plot tracks the mean decrease in accuracy that the model suffers when a given variable is removed, ceteris paribus. The right hand plot shows the mean increase in node purity by variable. The variable importance plot thus allows us to choose variables that have the strongest effect of the probability a startup is acquired. We thus select `milestones`, `funding_total_usd`, and `is_top500` given their high contributions to model accuracy and high node purities which are indicative of their explanatory power. We will also examine a partial dependence plot of `is_CA` given the high concentration of startups in the state of California.
+
+
+Unknown 
 
 
 ```{r , echo=FALSE}
 pd_funding<-partialPlot(startup.forest, startup_test, 'funding_total_usd', las=1)
 
+```
+We find that the benefit from funding increases rapidly and peaks at around 20 million, then falls slightly to a trough at around 50 million before again increasing and reaching a plateau at around 70% acquisition probability. In summary, past 50-60 million in funding diminishing marignal returns set in very quickly.
+
+
+```{r , echo=FALSE}
 pd_milestones<-partialPlot(startup.forest, startup_test, 'milestones', las=1)
 
-pd_top500<-partialPlot(startup.forest, startup_test, 'is_top500', las=1)
-
-pd_CA<-partialPlot(startup.forest, startup_test, 'is_CA', las=1)
 
 ```
-Discuss partial dependence plots!!!
+In the figure above we see the relationship between `milestones` and probability of acquisition. A "milestone" can be defined in a variety of ways e.g. developing minimum viable product, getting your first customer etc. While these milestones vary somewhat across different startups, it is reasonable to assume that the number of milestones reached provides a good proxy for the momentum of a startup, and will be important to investors. In the figure above we observe that acquisition probability increases up to a maximum at 4 milestones then slowly decreases to a plateau. As with `funding_total_usd` we again experience diminishing marginal returns.
+
+
+```{r , echo=FALSE}
+pd_top500<-partialPlot(startup.forest, startup_test, 'is_top500', las=1)
+
+
+
+```
+
+
+```{r , echo=FALSE}
+pd_CA<-partialPlot(startup.forest, startup_test, 'is_CA', las=1)
+
+
+```
+#Conclusion
+
+Returning to the variable importance plot, we see that belonging to one of the category "buckets" e.g. `is_science`, `is_entertainment` etc. seems to not be as significant as other factors. Indeed these variables fall rather low on the scales of %IncMSE accuracy and IncNodePurity. A possible reason for this is that it is not so much the "type" or "category" of startup that matters for eventual acquisition, but rather financial factors such as the ability to secure funding and meet specific milestones. Thus, we can conclude that in general, it may be the case that startup investors are "sector-agnostic" i.e. they place less weight on a startup's "bucket" relative to more concrete indicators of financial performance such as funding.
+
+Another interesting finding that was briefly touched upon in the *Results* section is how the partial dependence of acquisition on `funding_total_usd` and `milestones` exhibit diminishing marginal returns. This finding may give some insight into how VCs evaluate firms. It seems that in the investor's estimation there does not exist a linear relationship between the aforementioned factors and acquisition. For example, more funding is not always better on the margin. Instead, it would appear that VCs have a certain benchmark level of funding and milestones reached, past which they will assign a credence of roughly 70% to the startup succeeding. 
+
+While this dataset includes many variables, there are several other factors that influence the chances of success of a startup. Many of these are not mentioned in our dataset and so impose a constraint on the model and it’s accuracy.
+
+
+

@@ -19,11 +19,11 @@ library(onehot)
 
 
 
-#Import Data
-startup_data_2 <-read.csv(file.path("startup data 2.csv"))
-
-
-startup_data_2$status <- as.factor(startup_data_2$status)
+# #Import Data
+# startup_data_2 <-read.csv(file.path("startup data 2.csv"))
+# 
+# 
+# startup_data_2$status <- as.factor(startup_data_2$status)
 
 
 
@@ -133,6 +133,9 @@ head(startup_data_2)
 startup_split =  initial_split(startup_data_2, prop=0.8)
 startup_train = training(startup_split)
 startup_test  = testing(startup_split)
+
+#Make status a factor
+
 
 
 status ~ has_VC + has_angel + is_top500 + funding_total_usd + is_internet + is_entertainment + is_knowledge_service + is_science + is_other + is_CA + is_MA + is_NY + is_TX + is_WA + milestones
