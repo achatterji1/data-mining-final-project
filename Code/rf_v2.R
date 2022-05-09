@@ -1,8 +1,6 @@
-# RF Code 
+# Random Forest Code 
 
-###
-#Bagging and random forests
-###
+# Import Packages
 library(tidyverse)
 library(rpart)
 library(rpart.plot)
@@ -21,7 +19,7 @@ library(onehot)
 
 
 
-#Import Data Manually
+#Import Data
 
 startup_data_2 <- startup.data.2
 
@@ -42,7 +40,7 @@ startup_data_2$category_bucket[startup_data_2$category_code=='enterprise'] = 'in
 startup_data_2$category_bucket[startup_data_2$category_code=='ecommerce'] = 'internet'
 startup_data_2$category_bucket[startup_data_2$category_code=='security'] = 'internet'
 
-# entertainment bucket
+# Entertainment bucket
 #startup_data_2$category_bucket = 'null'
 startup_data_2$category_bucket[startup_data_2$category_code=='social'] = 'entertainment'
 startup_data_2$category_bucket[startup_data_2$category_code=='photo_video'] = 'entertainment'
@@ -68,7 +66,7 @@ startup_data_2$category_bucket[startup_data_2$category_code=='real_estate'] = 'k
 startup_data_2$category_bucket[startup_data_2$category_code=='transportation'] = 'knowledge_service'
 
 
-# science bucket
+# Science bucket
 #startup_data_2$category_bucket = 'null'
 startup_data_2$category_bucket[startup_data_2$category_code=='software'] = 'science'
 startup_data_2$category_bucket[startup_data_2$category_code=='semiconductor'] = 'science'
@@ -81,7 +79,7 @@ startup_data_2$category_bucket[startup_data_2$category_code=='biotech'] = 'scien
 startup_data_2$category_bucket[startup_data_2$category_code=='automotive'] = 'science'
 startup_data_2$category_bucket[startup_data_2$category_code=='manufacturing'] = 'science'
 
-# other bucket
+# Other bucket
 startup_data_2$category_bucket[startup_data_2$category_code=='other'] = 'other'                             
 
 table(startup_data_2$category_bucket)
@@ -97,14 +95,6 @@ startup_data_2$is_internet = 0
 startup_data_2$is_internet[startup_data_2$category_bucket=='internet'] = 1
 view(startup_data_2)
 
-#df$new <- c(3, 3, 6, 7, 8, 12)
-#startup_data_2$is_internet <- c(0)
-#startup_data_2$is_internet[startup_data_2$category_bucket=='internet'] = 1
-#view(startup_data_2)
-
-#startup_data_2$is_internet <- ifelse(startup_data_2$category_bucket == "internet", 1, 0) # Created a new column called status.dv which encodes the 
-# status (acquired=1, closed=0) as one-hot encoding
-#view(startup_data_2)
 
 #startup_data_2$category_bucket
 startup_data_2$is_entertainment = 0
@@ -128,7 +118,7 @@ startup_data_2$is_other[startup_data_2$category_bucket=='other'] = 1
 
 view(startup_data_2)
 
-# encode WA
+# Encode WA
 
 #startup_data_2$state_code.1
 startup_data_2$is_WA = 0
@@ -140,7 +130,7 @@ view(startup_data_2)
 
 head(startup_data_2)
 
-# let's split our data into training and testing
+# Let's split our data into training and testing
 startup_split =  initial_split(startup_data_2, prop=0.8)
 startup_train = training(startup_split)
 startup_test  = testing(startup_split)
@@ -149,14 +139,11 @@ startup_test  = testing(startup_split)
 status ~ has_VC + has_angel + is_top500 + funding_total_usd + is_internet + is_entertainment + is_knowledge_service + is_science + is_other + is_CA + is_MA + is_NY + is_TX + is_WA + milestones
 
 
-# let's fit a single tree
+# Let's fit a single tree
 startup.tree = rpart(status ~ has_VC + has_angel + is_top500 + funding_total_usd + is_internet + is_entertainment
                      + is_knowledge_service + is_science + is_other + is_CA + is_MA + is_NY + is_TX + is_WA + milestones, data=startup_train, control = rpart.control(cp = 0.00001))
 
-# now a random forest
-# notice: no tuning parameters!  just using the default
-# downside: takes longer because we're fitting hundreds of trees (500 by default)
-# the importance=TRUE flag tells randomForest to calculate variable importance metrics
+# Fit a forest
 startup.forest = randomForest(status ~ has_VC + has_angel + is_top500 + funding_total_usd + is_internet + is_entertainment
                               + is_knowledge_service + is_science + is_other + is_CA + is_MA + is_NY + is_TX + is_WA + milestones,
                               data=startup_train, importance = TRUE)
