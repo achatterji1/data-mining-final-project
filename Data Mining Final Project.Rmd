@@ -326,7 +326,7 @@ We arrived at the conclusion that a random forest model was a consistent winner 
 
 ```{r confusion matrix, echo=TRUE, warning=FALSE, include=TRUE}
 conf <- startup.forest$confusion
-conf
+# conf
 
 ##        acquired closed class.error
 ##acquired      439     43  0.08921162
