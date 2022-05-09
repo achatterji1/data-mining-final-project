@@ -469,4 +469,3 @@ Information about the founders (the total number of founders, their age, their a
 `Has_angel`: firm has an angel investor
 
 
-
