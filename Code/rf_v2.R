@@ -156,6 +156,9 @@ conf
 ##closed        132    124  0.51562500
 
 
+## Corresponds to roughly 76.28% accuracy
+
+
 # shows out-of-bag MSE as a function of the number of trees used
 plot(startup.forest)
 
